@@ -29,7 +29,7 @@ def öncekiGün(tarih):
     öncekiGün.strftime('%Y-%m-%d')
     return str(öncekiGün)
 
-def karikatürURL(soup):
+def karikatürURL(soup, tarih):
     link = soup.find('img', {'class': 'caricature-img'})
     url = link['src']
     alt = link['alt']
@@ -38,18 +38,18 @@ def karikatürURL(soup):
 def karikatürİndir(URL, öncekiURL, tarih):
     if URL[1] != öncekiURL:
         try:
-            karikatür = urllib.request.urlretrieve(URL[1], 'arşiv/' + URL[0] + '.jpg')
+            karikatür = urllib.request.urlretrieve(URL[1].replace(' ','%20'), 'arşiv/' + URL[0] + '.jpg')
             print('[+] ' + URL[0] + ' - ' + URL[1] + ' [' + tarih + ']')
         except:
-            print('[-] Karikatür indirilirken problem oluştu. URL: ' + URL[1])
+            print('[-] URL: ' + URL[1] + ' Alt: ' + URL[0])
 
 tarih = strftime('%Y-%m-%d')
 kullanıcıGirişi = int(input('Kaç günlük karikatür arşivi indirilecek >> '))
 geçiciDeğişken = ''
 
 for i in range(kullanıcıGirişi):
-    soup = sayfayıYükle(tarih)
-    çıktı = karikatürURL(soup)
+    sayfaKaynakKodu = sayfayıYükle(tarih)
+    çıktı = karikatürURL(sayfaKaynakKodu, tarih)
     karikatürİndir(çıktı, geçiciDeğişken, tarih)
     geçiciDeğişken = çıktı[1]
     tarih = öncekiGün(tarih)
