@@ -2,13 +2,11 @@
 
 import os
 import datetime
-import argparse
 import urllib.request
 from bs4 import BeautifulSoup
 from time import sleep, strftime
+from termcolor import colored
 
-if not os.path.exists('arşiv'):
-    os.makedirs('arşiv')
 
 def sayfayıYükle(tarih):
     url = 'http://www.komikaze.net/komikaze/'
@@ -29,7 +27,7 @@ def öncekiGün(tarih):
     öncekiGün.strftime('%Y-%m-%d')
     return str(öncekiGün)
 
-def karikatürURL(soup, tarih):
+def karikatürURL(soup):
     link = soup.find('img', {'class': 'caricature-img'})
     url = link['src']
     alt = link['alt']
@@ -39,17 +37,25 @@ def karikatürİndir(URL, öncekiURL, tarih):
     if URL[1] != öncekiURL:
         try:
             karikatür = urllib.request.urlretrieve(URL[1].replace(' ','%20'), 'arşiv/' + URL[0] + '.jpg')
-            print('[+] ' + URL[0] + ' - ' + URL[1] + ' [' + tarih + ']')
+            print(colored('[+]', 'green'),'{0:>25} | [{2}] | .{1} '.format(URL[0],URL[1][23:],tarih))
         except:
-            print('[-] URL: ' + URL[1] + ' Alt: ' + URL[0])
+            print(colored('[-]', 'red'), 'URL: ' + URL[1] + ' Alt: ' + URL[0])
 
 tarih = strftime('%Y-%m-%d')
-kullanıcıGirişi = int(input('Kaç günlük karikatür arşivi indirilecek >> '))
+kullanıcıGirişi = input('Komikaze.NET karikatür arşivi indirilecek. Onaylıyor musunuz [E/H] >> ')
 geçiciDeğişken = ''
 
-for i in range(kullanıcıGirişi):
-    sayfaKaynakKodu = sayfayıYükle(tarih)
-    çıktı = karikatürURL(sayfaKaynakKodu, tarih)
-    karikatürİndir(çıktı, geçiciDeğişken, tarih)
-    geçiciDeğişken = çıktı[1]
-    tarih = öncekiGün(tarih)
+if kullanıcıGirişi == 'E' or kullanıcıGirişi == 'e':
+    if os.path.exists('arşiv'):
+        print(colored('[+]','green'), colored('Arşiv klasörü bulundu.', 'blue'))
+    else:
+        os.makedirs('arşiv')
+        print(colored('[+]','green'), colored('Arşiv klasörü oluşturuldu.', 'blue'))
+
+    print(colored('Komikaze.NET','red'))
+    while tarih != '2014-01-12':
+        sayfaKaynakKodu = sayfayıYükle(tarih)
+        karikatür = karikatürURL(sayfaKaynakKodu)
+        karikatürİndir(karikatür, geçiciDeğişken, tarih)
+        geçiciDeğişken = karikatür[1]
+        tarih = öncekiGün(tarih)
